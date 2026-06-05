@@ -196,7 +196,7 @@ const sun=new THREE.DirectionalLight(0xffffff,0.8);
 sun.position.set(15,30,20);sun.castShadow=true;
 sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=sun.shadow.camera.bottom=-30;sun.shadow.camera.right=sun.shadow.camera.top=30;
 scene.add(sun);
-scene.add(Object.assign(new THREE.DirectionalLight(0xd0e4f8,0.25),{position:new THREE.Vector3(-10,8,-5)}));
+const fill2=new THREE.DirectionalLight(0xd0e4f8,0.25);fill2.position.set(-10,8,-5);scene.add(fill2);
 
 // ── Floor heights ──
 // RDC=0, 1ER bât A=FLOOR_H, 1ER bât B et C = FLOOR_H + HALF_STEP
