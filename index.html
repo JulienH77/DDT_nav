@@ -6,473 +6,155 @@
 <title>Wayfinding — Bâtiments A·B·C</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--surface:#fff;--border:#e2e0d8;--border-s:#c8c5bc;
+  --text:#1a1917;--muted:#8a8880;--faint:#d4d2ca;
+  --rdc:#1a1917;--ier:#3a5f96;--path:#e84545;--stair:#e07b00;--r:6px;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Geist',sans-serif}
+#app{display:grid;grid-template-columns:292px 1fr;height:100vh}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* PANEL */
+#panel{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.ph{padding:24px 20px 16px;border-bottom:1px solid var(--border)}
+.ph .ey{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.ph h1{font-size:16px;font-weight:600;letter-spacing:-.02em;line-height:1.2}
+.ph p{font-size:10px;color:var(--muted);margin-top:3px;font-family:'Geist Mono',monospace}
+.pb{flex:1;overflow-y:auto}.pb::-webkit-scrollbar{width:0}
+.sec{padding:16px 20px;border-bottom:1px solid var(--border)}
+.sl{font-size:9px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;font-family:'Geist Mono',monospace}
+.field{margin-bottom:8px}
+.field label{display:block;font-size:9px;color:var(--muted);margin-bottom:4px;font-family:'Geist Mono',monospace;letter-spacing:.05em}
+.fi{position:relative}
+.fi select{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--border-s);border-radius:var(--r);padding:8px 26px 8px 10px;font-family:'Geist Mono',monospace;font-size:11px;appearance:none;cursor:pointer;transition:border-color .15s;outline:none}
+.fi select:focus{border-color:var(--text)}
+.fi::after{content:'↕';position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:10px;pointer-events:none}
+.swap-row{display:flex;justify-content:center;margin:2px 0}
+#btn-swap{width:26px;height:26px;background:var(--bg);border:1px solid var(--border-s);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s}
+#btn-swap:hover{background:var(--text);color:#fff;border-color:var(--text)}
+.btn-p{width:100%;padding:9px 12px;background:var(--text);color:#fff;border:none;border-radius:var(--r);font-family:'Geist',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:opacity .15s;margin-top:10px}
+.btn-p:hover{opacity:.8}.btn-p:disabled{opacity:.25;cursor:default}
+.btn-g{width:100%;padding:8px 12px;background:transparent;color:var(--muted);border:1px solid var(--border-s);border-radius:var(--r);font-family:'Geist',sans-serif;font-size:11px;cursor:pointer;transition:all .15s;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn-g:hover{border-color:var(--text);color:var(--text)}.btn-g:disabled{opacity:.22;cursor:default}
 
-:root {
-  --bg: #f5f4f0;
-  --surface: #ffffff;
-  --border: #e2e0d8;
-  --border-strong: #c8c5bc;
-  --text: #1a1917;
-  --muted: #8a8880;
-  --faint: #d4d2ca;
+/* route steps */
+#route-steps{display:none}#route-steps.on{display:block}
+.rh{font-size:11px;margin-bottom:10px;line-height:1.5}
+.rf{font-weight:600}.rt{font-weight:600;color:var(--path)}
+.slist{list-style:none}
+.si{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:10px;font-family:'Geist Mono',monospace;border-bottom:1px solid var(--border)}
+.si:last-child{border:none}
+.sico{width:16px;height:16px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;margin-top:1px}
+.sico.s{background:#e8f5ef;color:#1a7a4a;border:1px solid #b4ddc8}
+.sico.e{background:#fdeef0;color:#c4293a;border:1px solid #f5c0c6}
+.sico.st{background:#fff4e3;color:#b36b00;border:1px solid #f0d49a}
+.stxt{color:var(--text);line-height:1.4}
+.ssub{color:var(--muted);font-size:9px}
 
-  --rdc: #1a1917;
-  --ier: #4a6fa5;
-  --path: #e84545;
-  --stair: #f5a623;
+/* floor checkboxes */
+.floor-checks{display:flex;flex-direction:column;gap:6px}
+.fcheck{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 0}
+.fcheck input[type=checkbox]{width:14px;height:14px;accent-color:var(--text);cursor:pointer}
+.fcheck span{font-size:11px;font-family:'Geist Mono',monospace;letter-spacing:.03em}
+.fcheck .fc-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
-  --accent: #1a1917;
-
-  --r: 6px;
-}
-
-html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); color:var(--text); font-family:'Geist',sans-serif; }
-
-/* ── LAYOUT ── */
-#app { display:grid; grid-template-columns:300px 1fr; height:100vh; }
-
-/* ── PANEL ── */
-#panel {
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.panel-head {
-  padding: 28px 24px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.panel-head .eyebrow {
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  letter-spacing: .18em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-.panel-head h1 {
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -.02em;
-  color: var(--text);
-  line-height: 1.2;
-}
-.panel-head p {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 4px;
-  font-family: 'Geist Mono', monospace;
-}
-
-.panel-body { flex: 1; overflow-y: auto; }
-.panel-body::-webkit-scrollbar { width: 0; }
-
-.section {
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
-}
-.section-label {
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 14px;
-  font-family: 'Geist Mono', monospace;
-}
-
-/* selects */
-.field { margin-bottom: 10px; }
-.field label {
-  display: block;
-  font-size: 10px;
-  color: var(--muted);
-  margin-bottom: 5px;
-  font-family: 'Geist Mono', monospace;
-  letter-spacing: .06em;
-}
-.field-inner { position: relative; }
-.field-inner select {
-  width: 100%;
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r);
-  padding: 9px 28px 9px 12px;
-  font-family: 'Geist Mono', monospace;
-  font-size: 11px;
-  appearance: none;
-  cursor: pointer;
-  transition: border-color .15s;
-  outline: none;
-}
-.field-inner select:focus { border-color: var(--text); }
-.field-inner::after {
-  content: '↕';
-  position: absolute;
-  right: 10px; top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted);
-  font-size: 10px;
-  pointer-events: none;
-}
-
-/* swap button */
-.swap-row {
-  display: flex;
-  justify-content: center;
-  margin: 4px 0;
-}
-#btn-swap {
-  width: 28px; height: 28px;
-  background: var(--bg);
-  border: 1px solid var(--border-strong);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all .15s;
-}
-#btn-swap:hover { background: var(--text); color: white; border-color: var(--text); }
-
-/* buttons */
-.btn-primary {
-  width: 100%;
-  padding: 10px 14px;
-  background: var(--text);
-  color: white;
-  border: none;
-  border-radius: var(--r);
-  font-family: 'Geist', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: .02em;
-  cursor: pointer;
-  transition: opacity .15s;
-  margin-top: 12px;
-}
-.btn-primary:hover { opacity: .82; }
-.btn-primary:disabled { opacity: .28; cursor: default; }
-
-.btn-ghost {
-  width: 100%;
-  padding: 9px 14px;
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r);
-  font-family: 'Geist', sans-serif;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all .15s;
-  margin-top: 7px;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.btn-ghost:hover { border-color: var(--text); color: var(--text); }
-.btn-ghost:disabled { opacity: .25; cursor: default; }
-
-/* itinerary steps */
-#route-steps { display: none; }
-#route-steps.on { display: block; }
-.route-header {
-  font-size: 11px;
-  margin-bottom: 12px;
-  line-height: 1.5;
-}
-.route-from { font-weight: 600; }
-.route-to { font-weight: 600; color: var(--path); }
-.step-list { list-style: none; }
-.step-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 8px 0;
-  font-size: 11px;
-  font-family: 'Geist Mono', monospace;
-  border-bottom: 1px solid var(--border);
-}
-.step-item:last-child { border: none; }
-.step-icon {
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 9px;
-  margin-top: 1px;
-}
-.step-icon.start { background: #e8f5ef; color: #1a7a4a; border: 1px solid #b4ddc8; }
-.step-icon.end   { background: #fdeef0; color: #c4293a; border: 1px solid #f5c0c6; }
-.step-icon.stair { background: #fff4e3; color: #b36b00; border: 1px solid #f0d49a; }
-.step-text { color: var(--text); line-height: 1.4; }
-.step-sub { color: var(--muted); font-size: 10px; }
-
-/* floor toggle */
-.floor-toggle {
-  display: flex;
-  background: var(--bg);
-  border-radius: var(--r);
-  padding: 3px;
-  gap: 2px;
-  border: 1px solid var(--border);
-}
-.ftab {
-  flex: 1;
-  padding: 6px;
-  border: none;
-  border-radius: calc(var(--r) - 2px);
-  background: transparent;
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all .15s;
-  letter-spacing: .04em;
-}
-.ftab.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-
-/* view controls */
-.view-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.view-btn {
-  padding: 8px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  font-family: 'Geist Mono', monospace;
-  font-size: 9px;
-  color: var(--muted);
-  cursor: pointer;
-  text-align: center;
-  transition: all .15s;
-  letter-spacing: .04em;
-}
-.view-btn:hover { border-color: var(--text); color: var(--text); }
-.view-btn.on { background: var(--text); color: white; border-color: var(--text); }
+/* view buttons */
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.vb{padding:7px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);font-family:'Geist Mono',monospace;font-size:9px;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;letter-spacing:.04em}
+.vb:hover{border-color:var(--text);color:var(--text)}.vb.on{background:var(--text);color:#fff;border-color:var(--text)}
 
 /* legend */
-.legend-grid { display: flex; flex-direction: column; gap: 7px; }
-.leg { display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--muted); }
-.leg-line { width: 24px; height: 2px; border-radius: 1px; }
-.leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.lgg{display:flex;flex-direction:column;gap:6px}
+.lg{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted)}
+.lg-line{width:20px;height:2px;border-radius:1px}
+.lg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.lg-sq{width:7px;height:7px;border-radius:1px;flex-shrink:0}
 
-/* panel footer */
-.panel-foot {
-  padding: 12px 24px;
-  border-top: 1px solid var(--border);
-  font-size: 10px;
-  font-family: 'Geist Mono', monospace;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.status-pip {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: #22c55e;
-  flex-shrink: 0;
-  animation: pip 2.5s ease-in-out infinite;
-}
-@keyframes pip { 0%,100%{opacity:1} 50%{opacity:.3} }
+/* footer */
+.pf{padding:10px 20px;border-top:1px solid var(--border);font-size:10px;font-family:'Geist Mono',monospace;color:var(--muted);display:flex;align-items:center;gap:6px}
+.pip{width:5px;height:5px;border-radius:50%;background:#22c55e;flex-shrink:0;animation:pip 2.5s ease-in-out infinite}
+@keyframes pip{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* ── CANVAS ── */
-#cvwrap { position: relative; overflow: hidden; background: var(--bg); }
-#cv { display: block; width: 100%; height: 100%; cursor: grab; }
-#cv:active { cursor: grabbing; }
-
-/* tooltip */
-#tip {
-  position: absolute;
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r);
-  padding: 8px 12px;
-  font-size: 11px;
-  font-family: 'Geist Mono', monospace;
-  pointer-events: none;
-  display: none;
-  box-shadow: 0 4px 16px rgba(0,0,0,.08);
-  z-index: 100;
-}
-#tip strong { display: block; color: var(--text); font-size: 12px; margin-bottom: 2px; }
-#tip span { color: var(--muted); font-size: 10px; }
-
-/* HUD overlays */
-#hud-floor {
-  position: absolute;
-  top: 18px; left: 18px;
-  display: flex; gap: 4px;
-}
-.hud-tag {
-  padding: 4px 10px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: .06em;
-  backdrop-filter: blur(8px);
-}
-.hud-tag.rdc-tag { color: var(--rdc); border-color: var(--rdc); background: rgba(255,255,255,.9); }
-.hud-tag.ier-tag { color: var(--ier); border-color: var(--ier); background: rgba(255,255,255,.9); }
-
-/* minimap */
-#mm {
-  position: absolute;
-  bottom: 18px; right: 18px;
-  width: 140px; height: 80px;
-  background: rgba(255,255,255,.92);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r);
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,.06);
-}
-
-/* loading */
-#loading {
-  position: absolute; inset: 0;
-  background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 16px;
-  z-index: 200;
-  transition: opacity .6s;
-}
-#loading.gone { opacity: 0; pointer-events: none; }
-.loader {
-  width: 32px; height: 32px;
-  border: 2px solid var(--border);
-  border-top-color: var(--text);
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-#loading p { font-size: 11px; color: var(--muted); font-family: 'Geist Mono', monospace; }
-
-/* reset hint */
-#hint {
-  position: absolute;
-  bottom: 18px; left: 50%;
-  transform: translateX(-50%);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 5px 14px;
-  font-size: 10px;
-  font-family: 'Geist Mono', monospace;
-  color: var(--muted);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity .4s;
-}
-#hint.on { opacity: 1; }
+/* CANVAS */
+#cvwrap{position:relative;overflow:hidden;background:var(--bg)}
+#cv{display:block;width:100%;height:100%;cursor:grab}#cv:active{cursor:grabbing}
+#tip{position:absolute;background:var(--surface);border:1px solid var(--border-s);border-radius:var(--r);padding:7px 10px;font-size:10px;font-family:'Geist Mono',monospace;pointer-events:none;display:none;box-shadow:0 4px 12px rgba(0,0,0,.07);z-index:100}
+#tip strong{display:block;color:var(--text);font-size:11px;margin-bottom:1px}
+#tip span{color:var(--muted);font-size:9px}
+#mm{position:absolute;bottom:16px;right:16px;width:130px;height:72px;background:rgba(255,255,255,.92);border:1px solid var(--border-s);border-radius:var(--r);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+#loading{position:absolute;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:200;transition:opacity .6s}
+#loading.gone{opacity:0;pointer-events:none}
+.ldr{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--text);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{font-size:10px;color:var(--muted);font-family:'Geist Mono',monospace}
+#hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:9px;font-family:'Geist Mono',monospace;color:var(--muted);pointer-events:none;opacity:0;transition:opacity .4s;white-space:nowrap}
+#hint.on{opacity:1}
 </style>
 </head>
 <body>
 <div id="app">
-
-<!-- PANEL -->
 <aside id="panel">
-  <div class="panel-head">
-    <div class="eyebrow">Wayfinding</div>
-    <h1>Navigation<br>inter-bâtiments</h1>
+  <div class="ph">
+    <div class="ey">Wayfinding</div>
+    <h1>Navigation inter-bâtiments</h1>
     <p>A · B · C — RDC &amp; 1er étage</p>
   </div>
-
-  <div class="panel-body">
+  <div class="pb">
     <!-- Trajet -->
-    <div class="section">
-      <div class="section-label">Trajet</div>
-      <div class="field">
-        <label>Départ</label>
-        <div class="field-inner">
-          <select id="sel-from"><option value="">Sélectionner un bureau…</option></select>
-        </div>
-      </div>
-      <div class="swap-row">
-        <button id="btn-swap" title="Inverser">⇅</button>
-      </div>
-      <div class="field">
-        <label>Arrivée</label>
-        <div class="field-inner">
-          <select id="sel-to"><option value="">Sélectionner un bureau…</option></select>
-        </div>
-      </div>
-      <button class="btn-primary" id="btn-go" disabled>Calculer l'itinéraire</button>
-      <button class="btn-ghost" id="btn-anim" disabled>
-        <span id="anim-icon">▶</span> Animer le parcours
-      </button>
+    <div class="sec">
+      <div class="sl">Trajet</div>
+      <div class="field"><label>Départ</label><div class="fi"><select id="sel-from"><option value="">Sélectionner…</option></select></div></div>
+      <div class="swap-row"><button id="btn-swap" title="Inverser">⇅</button></div>
+      <div class="field"><label>Arrivée</label><div class="fi"><select id="sel-to"><option value="">Sélectionner…</option></select></div></div>
+      <button class="btn-p" id="btn-go" disabled>Calculer l'itinéraire</button>
+      <button class="btn-g" id="btn-anim" disabled><span id="ai">▶</span> Animer</button>
     </div>
-
     <!-- Résultat -->
-    <div class="section" id="route-steps">
-      <div class="section-label">Itinéraire</div>
-      <div class="route-header" id="route-header"></div>
-      <ul class="step-list" id="step-list"></ul>
+    <div class="sec" id="route-steps">
+      <div class="sl">Itinéraire</div>
+      <div class="rh" id="rh"></div>
+      <ul class="slist" id="sl2"></ul>
     </div>
-
-    <!-- Affichage -->
-    <div class="section">
-      <div class="section-label">Étages</div>
-      <div class="floor-toggle">
-        <button class="ftab on" data-f="all">Tous</button>
-        <button class="ftab" data-f="RDC">RDC</button>
-        <button class="ftab" data-f="1ER">1er</button>
+    <!-- Étages -->
+    <div class="sec">
+      <div class="sl">Étages visibles</div>
+      <div class="floor-checks">
+        <label class="fcheck"><input type="checkbox" id="chk-rdc" checked><div class="fc-dot" style="background:#1a1917"></div><span>Rez-de-chaussée</span></label>
+        <label class="fcheck"><input type="checkbox" id="chk-ier" checked><div class="fc-dot" style="background:#3a5f96"></div><span>1er étage</span></label>
       </div>
     </div>
-
-    <!-- Vue -->
-    <div class="section">
-      <div class="section-label">Caméra</div>
-      <div class="view-grid">
-        <button class="view-btn on" id="v-iso">ISO</button>
-        <button class="view-btn" id="v-top">TOP</button>
-        <button class="view-btn" id="v-front">FAÇADE</button>
-        <button class="view-btn" id="v-reset">RESET ↺</button>
+    <!-- Caméra -->
+    <div class="sec">
+      <div class="sl">Caméra</div>
+      <div class="vgrid">
+        <button class="vb on" id="v-iso">ISO</button>
+        <button class="vb" id="v-top">TOP</button>
+        <button class="vb" id="v-front">FAÇADE</button>
+        <button class="vb" id="v-reset">RESET ↺</button>
       </div>
     </div>
-
     <!-- Légende -->
-    <div class="section">
-      <div class="section-label">Légende</div>
-      <div class="legend-grid">
-        <div class="leg"><div class="leg-dot" style="background:#1a1917"></div>Rez-de-chaussée</div>
-        <div class="leg"><div class="leg-dot" style="background:#4a6fa5"></div>1er étage</div>
-        <div class="leg"><div class="leg-line" style="background:#e84545"></div>Chemin calculé</div>
-        <div class="leg"><div class="leg-line" style="background:#f5a623;border-top:2px dashed #f5a623;height:0"></div>Escaliers</div>
+    <div class="sec">
+      <div class="sl">Légende</div>
+      <div class="lgg">
+        <div class="lg"><div class="lg-sq" style="background:#1a1917;opacity:.35"></div>RDC — contour</div>
+        <div class="lg"><div class="lg-sq" style="background:#3a5f96;opacity:.45"></div>1er étage — contour</div>
+        <div class="lg"><div class="lg-dot" style="background:#b8b0a0"></div>Bureau (cliquable)</div>
+        <div class="lg"><div class="lg-line" style="background:#e84545"></div>Chemin</div>
+        <div class="lg"><div class="lg-sq" style="background:#e07b00;border-radius:2px"></div>Escalier</div>
       </div>
     </div>
   </div>
-
-  <div class="panel-foot">
-    <div class="status-pip" id="status-pip"></div>
-    <span id="status-txt">Chargement…</span>
-  </div>
+  <div class="pf"><div class="pip" id="pip"></div><span id="stxt">Chargement…</span></div>
 </aside>
 
-<!-- 3D VIEW -->
 <div id="cvwrap">
-  <div id="loading">
-    <div class="loader"></div>
-    <p>Construction des bâtiments…</p>
-  </div>
+  <div id="loading"><div class="ldr"></div><p>Construction des bâtiments…</p></div>
   <canvas id="cv"></canvas>
-  <div id="tip"><strong id="tip-name"></strong><span id="tip-sub"></span></div>
-
-  <!-- HUD -->
-  <div id="hud-floor">
-    <span class="hud-tag rdc-tag">RDC</span>
-    <span class="hud-tag ier-tag">1er</span>
-  </div>
-
-  <!-- Minimap -->
+  <div id="tip"><strong id="tn"></strong><span id="ts"></span></div>
   <div id="mm"><canvas id="mmc"></canvas></div>
-
-  <!-- Hint -->
-  <div id="hint">Clic gauche · rotation — Scroll · zoom</div>
+  <div id="hint">glisser · rotation — molette · zoom</div>
 </div>
 </div>
 
@@ -481,668 +163,472 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); col
 <script src="routing.js"></script>
 <script>
 'use strict';
+const NAME_MAP={'Accueil':'ACCUEIL','Bureau PMR':'SALLE PMR','Pisani':'SALLE PISANI','Salle serveur':'SALLE SERVEUR','Salle de réunion':null,'Annexe Pisani':null,'Archives':null,'Local à vélo':null,'A105':null,'A107':null,'A115':null,'C5':null};
+const polyToRoute=n=>(n in NAME_MAP)?NAME_MAP[n]:n;
 
-// ─── Name map ───
-const NAME_MAP = {
-  'Accueil':'ACCUEIL','Bureau PMR':'SALLE PMR','Pisani':'SALLE PISANI',
-  'Salle serveur':'SALLE SERVEUR','Salle de réunion':null,'Annexe Pisani':null,
-  'Archives':null,'Local à vélo':null,'A105':null,'A107':null,'A115':null,'C5':null,
-};
-const polyToRoute = n => (n in NAME_MAP) ? NAME_MAP[n] : n;
-
-// ─── Geo projection ───
-let OX = 0, OY = 0;
-function initOrigin() {
+// ── Projection ──
+let OX=0,OY=0;
+function initOrigin(){
   let sx=0,sy=0,n=0;
-  for (const gj of [GEO_DATA['rdc_A'],GEO_DATA['rdc_B'],GEO_DATA['rdc_C']]) {
-    for (const f of gj.features) {
-      if (f.geometry.type !== 'Polygon') continue;
-      for (const ring of f.geometry.coordinates)
-        for (const [x,y] of ring) { sx+=x; sy+=y; n++; }
+  for(const gj of [GEO_DATA['rdc_A'],GEO_DATA['rdc_B'],GEO_DATA['rdc_C']]){
+    for(const f of gj.features){
+      if(f.geometry.type!=='Polygon')continue;
+      for(const ring of f.geometry.coordinates)for(const[x,y]of ring){sx+=x;sy+=y;n++;}
     }
   }
-  OX = sx/n; OY = sy/n;
+  OX=sx/n;OY=sy/n;
 }
-const SC = 10000;
-const proj = (lon,lat) => [(lon-OX)*SC, (lat-OY)*SC];
+const SC=10000;
+const proj=(lon,lat)=>[(lon-OX)*SC,(lat-OY)*SC];
 
-// ─── Renderer ───
-const cvWrap = document.getElementById('cvwrap');
-const cv = document.getElementById('cv');
-const renderer = new THREE.WebGLRenderer({ canvas:cv, antialias:true });
+// ── Renderer ──
+const cvWrap=document.getElementById('cvwrap'),cv=document.getElementById('cv');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf5f4f0);
-
-// Camera — orthographic for cleaner architectural feel
-let useOrtho = false;
-const cam = new THREE.PerspectiveCamera(42, 1, 0.1, 2000);
-
-// Lighting — clean architectural
-scene.add(new THREE.AmbientLight(0xf0ede6, 1.4));
-const sun = new THREE.DirectionalLight(0xffffff, 1.0);
-sun.position.set(30, 60, 40);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048,2048);
-sun.shadow.camera.near = 0.1; sun.shadow.camera.far = 400;
-sun.shadow.camera.left = sun.shadow.camera.bottom = -80;
-sun.shadow.camera.right = sun.shadow.camera.top = 80;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xf5f4f0);
+const cam=new THREE.PerspectiveCamera(40,1,0.1,500);
+scene.add(new THREE.AmbientLight(0xffffff,1.6));
+const sun=new THREE.DirectionalLight(0xffffff,0.8);
+sun.position.set(15,30,20);sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=sun.shadow.camera.bottom=-30;sun.shadow.camera.right=sun.shadow.camera.top=30;
 scene.add(sun);
-const fill = new THREE.DirectionalLight(0xcfe0f0, 0.3);
-fill.position.set(-20, 10, -10);
-scene.add(fill);
+scene.add(Object.assign(new THREE.DirectionalLight(0xd0e4f8,0.25),{position:new THREE.Vector3(-10,8,-5)}));
 
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-// ─── Orbit ───
-// Isometric-style: fixed elevation angles, pan + zoom
-const CAM_PRESETS = {
-  iso:   { th: -0.6, ph: 0.72, r: 85 },
-  top:   { th: -0.6, ph: 0.04, r: 85 },
-  front: { th: Math.PI*0.5, ph: 1.1, r: 85 },
-};
-let sph = { ...CAM_PRESETS.iso };
-let tgt = new THREE.Vector3(0, 3, 0);
-
-function camUpdate() {
-  const x = sph.r * Math.sin(sph.ph) * Math.sin(sph.th);
-  const y = sph.r * Math.cos(sph.ph);
-  const z = sph.r * Math.sin(sph.ph) * Math.cos(sph.th);
-  cam.position.set(tgt.x+x, tgt.y+y, tgt.z+z);
-  cam.lookAt(tgt);
+// ── Floor heights ──
+// RDC=0, 1ER bât A=FLOOR_H, 1ER bât B et C = FLOOR_H + HALF_STEP
+const FLOOR_H=5;
+const HALF_STEP=1.5; // B et C 1ER sont 1.5 unités plus haut
+// La hauteur Y dans la scène pour chaque bâtiment
+const FZ={RDC:0,'1ER_A':FLOOR_H,'1ER_B':FLOOR_H+HALF_STEP,'1ER_C':FLOOR_H+HALF_STEP};
+// Simplification pour le routeur: les points path restent avec floor='1ER', on ajuste juste le visuel des bâtiments B et C
+function getFloorY(floor,bldg){
+  if(floor==='RDC')return 0;
+  if(bldg==='A')return FZ['1ER_A'];
+  if(bldg==='B')return FZ['1ER_B'];
+  if(bldg==='C')return FZ['1ER_C'];
+  return FLOOR_H;
 }
 
-let drag = false, lastM = {x:0,y:0};
-cv.addEventListener('mousedown', e => {
-  drag = true; lastM = {x:e.clientX,y:e.clientY};
-  showHint();
+// ── Camera orbit ──
+const CAM={iso:{th:-0.55,ph:0.65,r:28},top:{th:-0.55,ph:0.06,r:28},front:{th:Math.PI*.5,ph:1.0,r:28}};
+let sph={...CAM.iso},tgt=new THREE.Vector3(-0.2,2.5,0);
+function camUpd(){
+  const x=sph.r*Math.sin(sph.ph)*Math.sin(sph.th);
+  const y=sph.r*Math.cos(sph.ph);
+  const z=sph.r*Math.sin(sph.ph)*Math.cos(sph.th);
+  cam.position.set(tgt.x+x,tgt.y+y,tgt.z+z);cam.lookAt(tgt);
+}
+let drag=false,lm={x:0,y:0};
+cv.addEventListener('mousedown',e=>{drag=true;lm={x:e.clientX,y:e.clientY};showHint();});
+window.addEventListener('mouseup',()=>drag=false);
+window.addEventListener('mousemove',e=>{
+  if(!drag)return;
+  sph.th-=(e.clientX-lm.x)*.005;
+  sph.ph=Math.max(0.06,Math.min(Math.PI/2-.02,sph.ph+(e.clientY-lm.y)*.005));
+  lm={x:e.clientX,y:e.clientY};camUpd();
 });
-window.addEventListener('mouseup', () => drag = false);
-window.addEventListener('mousemove', e => {
-  if (!drag) return;
-  const dx = e.clientX - lastM.x, dy = e.clientY - lastM.y;
-  sph.th -= dx * 0.004;
-  sph.ph = Math.max(0.05, Math.min(Math.PI/2 - 0.02, sph.ph + dy*0.004));
-  lastM = {x:e.clientX,y:e.clientY};
-  camUpdate();
-});
-cv.addEventListener('wheel', e => {
-  sph.r = Math.max(10, Math.min(200, sph.r + e.deltaY*0.06));
-  camUpdate(); e.preventDefault();
-}, { passive: false });
-
-// Touch
-let lt = [];
-cv.addEventListener('touchstart', e => { lt = [...e.touches]; });
-cv.addEventListener('touchmove', e => {
-  if (e.touches.length === 1) {
-    sph.th -= (e.touches[0].clientX - lt[0].clientX)*0.007;
-    sph.ph = Math.max(0.05, Math.min(Math.PI/2-.02, sph.ph + (e.touches[0].clientY-lt[0].clientY)*0.007));
-    camUpdate();
-  } else if (e.touches.length === 2) {
-    const pd = Math.hypot(lt[0].clientX-lt[1].clientX, lt[0].clientY-lt[1].clientY);
-    const cd = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
-    sph.r = Math.max(10, Math.min(200, sph.r - (cd-pd)*0.15));
-    camUpdate();
+cv.addEventListener('wheel',e=>{sph.r=Math.max(5,Math.min(120,sph.r+e.deltaY*.05));camUpd();e.preventDefault();},{passive:false});
+let lt=[];
+cv.addEventListener('touchstart',e=>{lt=[...e.touches];});
+cv.addEventListener('touchmove',e=>{
+  if(e.touches.length===1){
+    sph.th-=(e.touches[0].clientX-lt[0].clientX)*.007;
+    sph.ph=Math.max(0.06,Math.min(Math.PI/2-.02,sph.ph+(e.touches[0].clientY-lt[0].clientY)*.007));
+    camUpd();
+  }else if(e.touches.length===2){
+    const pd=Math.hypot(lt[0].clientX-lt[1].clientX,lt[0].clientY-lt[1].clientY);
+    const cd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    sph.r=Math.max(5,Math.min(120,sph.r-(cd-pd)*.12));camUpd();
   }
-  lt = [...e.touches]; e.preventDefault();
-}, { passive: false });
+  lt=[...e.touches];e.preventDefault();
+},{passive:false});
+let hT=null;
+function showHint(){const h=document.getElementById('hint');h.classList.add('on');clearTimeout(hT);hT=setTimeout(()=>h.classList.remove('on'),2000);}
 
-let hintTimer = null;
-function showHint() {
-  document.getElementById('hint').classList.add('on');
-  clearTimeout(hintTimer);
-  hintTimer = setTimeout(() => document.getElementById('hint').classList.remove('on'), 2200);
+// ── Helpers géométrie ──
+function makeShape(ring){
+  const sh=new THREE.Shape();
+  const pts=ring.map(([x,z])=>proj(x,z));
+  sh.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length-1;i++)sh.lineTo(pts[i][0],pts[i][1]);
+  sh.closePath();return sh;
+}
+function makeFlat(ring,y,mat){
+  const m=new THREE.Mesh(new THREE.ShapeGeometry(makeShape(ring)),mat);
+  m.rotation.x=-Math.PI/2;m.position.y=y;m.receiveShadow=true;return m;
+}
+function makeOutline(ring,y,color,opacity=1){
+  const pts=ring.map(([x,z])=>{const p=proj(x,z);return new THREE.Vector3(p[0],y,-p[1]);});
+  return new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color,transparent:opacity<1,opacity}));
 }
 
-// ─── Floor heights (FLAT — same Z base, only offset between floors) ───
-// RDC at y=0, 1ER at y=FLOOR_H
-// Within each floor everything is coplanar (no slab above rooms)
-const FLOOR_H = 6.5;
-const FZ = { RDC: 0, '1ER': FLOOR_H };
-const ROOM_H = 0.12; // ultra-flat slab — just enough for visibility
-
-// ─── Materials ───
-function makeMat(col, rough=0.85, metal=0) {
-  return new THREE.MeshStandardMaterial({ color:col, roughness:rough, metalness:metal });
+// ── Labels en 2D canvas dans l'espace 3D (sprite positionné AU NIVEAU du sol) ──
+function centroid(ring){
+  let sx=0,sy=0;for(const[x,y]of ring){sx+=x;sy+=y;}
+  return[sx/ring.length,sy/ring.length];
 }
-// Floor palette
-const MAT = {
-  slab_rdc:  makeMat(0xebe8e0),
-  slab_ier:  makeMat(0xdde5f0),
-  room_rdc:  makeMat(0xd4d0c4),
-  room_ier:  makeMat(0xc0cfe8),
-  room_wc:   makeMat(0xcecece),
-  wall_rdc:  makeMat(0xf8f6f0, 0.9),
-  wall_ier:  makeMat(0xeaf0f8, 0.9),
-  stair:     makeMat(0xf5a623, 0.7),
-};
-
-// ─── Geometry ───
-function makeFlat(ring, y, mat, receiveS=true) {
-  const sh = new THREE.Shape();
-  const pts = ring.map(([x,z]) => proj(x,z));
-  sh.moveTo(pts[0][0], pts[0][1]);
-  for (let i = 1; i < pts.length-1; i++) sh.lineTo(pts[i][0], pts[i][1]);
-  sh.closePath();
-  const geo = new THREE.ShapeGeometry(sh);
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.rotation.x = -Math.PI/2;
-  mesh.position.y = y;
-  mesh.receiveShadow = receiveS;
-  return mesh;
+function makeLabel(text,ring,y,color,scale=3.5){
+  const c2=document.createElement('canvas');c2.width=256;c2.height=56;
+  const ctx=c2.getContext('2d');
+  ctx.fillStyle=`#${color.toString(16).padStart(6,'0')}`;
+  ctx.font='500 20px Geist,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(text,128,28);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c2),transparent:true,opacity:.82,depthTest:false}));
+  const[cx,cy]=centroid(ring);const[px,py]=proj(cx,cy);
+  // Y = floor level + quasi-rien pour rester dans le plan
+  sp.position.set(px,y+0.05,-py);
+  sp.scale.set(scale,scale*56/256,1);
+  sp.userData={isLabel:true};return sp;
 }
 
-function makeBox(ring, y, h, mat) {
-  const sh = new THREE.Shape();
-  const pts = ring.map(([x,z]) => proj(x,z));
-  sh.moveTo(pts[0][0], pts[0][1]);
-  for (let i = 1; i < pts.length-1; i++) sh.lineTo(pts[i][0], pts[i][1]);
-  sh.closePath();
-  const geo = new THREE.ExtrudeGeometry(sh, { depth:h, bevelEnabled:false });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.rotation.x = -Math.PI/2;
-  mesh.position.y = y;
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  return mesh;
-}
+// ── Scene groups par étage pour visibilité ──
+const grpRDC=new THREE.Group(),grpIER=new THREE.Group();
+scene.add(grpRDC);scene.add(grpIER);
 
-function makeOutline(ring, y, color, linewidth=1, opacity=1) {
-  const pts = ring.map(([x,z]) => { const p=proj(x,z); return new THREE.Vector3(p[0],y,-p[1]); });
-  const geo = new THREE.BufferGeometry().setFromPoints(pts);
-  return new THREE.LineLoop(geo, new THREE.LineBasicMaterial({color, transparent:opacity<1, opacity, linewidth}));
-}
+// ── Room meshes ──
+const roomMeshes=[],roomByName=new Map();
 
-// ─── Labels ───
-function makeLabel(text, ring, y, color) {
-  const c2 = document.createElement('canvas'); c2.width=256; c2.height=48;
-  const ctx = c2.getContext('2d');
-  ctx.fillStyle = `#${color.toString(16).padStart(6,'0')}`;
-  ctx.font = '500 18px Geist,sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(text, 128, 24);
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c2),transparent:true,opacity:.9}));
-  let sx=0,sy=0;
-  for (const [x,z] of ring) { sx+=x; sy+=z; }
-  sx/=ring.length; sy/=ring.length;
-  const [px,py] = proj(sx,sy);
-  sp.position.set(px, y, -py);
-  sp.scale.set(5, 1, 1);
-  sp.userData = {isLabel:true};
-  return sp;
-}
+function buildFloor(geojsonArr,floor,bldg){
+  const grp=floor==='RDC'?grpRDC:grpIER;
+  const y=getFloorY(floor,bldg);
+  const isRDC=floor==='RDC';
+  const ecol=isRDC?0x1a1917:0x3a5f96;
+  const eopa=isRDC?.45:.55;
 
-// ─── Build scene ───
-const roomMeshes = [];
-const roomByName = new Map();
+  for(const gj of geojsonArr){
+    for(const feat of gj.features){
+      const ring=feat.geometry.coordinates[0];
+      const type=(feat.properties.type||'').toLowerCase();
+      const name=feat.properties.name||'';
+      const isEtage=type==='etage'||type==='étage';
 
-function buildFloor(geojsonArr, floor) {
-  const isRDC = floor === 'RDC';
-  const y = FZ[floor];
-  const ecol = isRDC ? 0x1a1917 : 0x4a6fa5;
-  const eopa = isRDC ? 0.35 : 0.45;
-
-  for (const gj of geojsonArr) {
-    for (const feat of gj.features) {
-      const ring = feat.geometry.coordinates[0];
-      const type = (feat.properties.type||'').toLowerCase();
-      const name = feat.properties.name||'';
-      const isEtage = type==='etage'||type==='étage';
-
-      if (isEtage) {
-        // Base slab — flat, at floor level
-        const slab = makeFlat(ring, y, isRDC ? MAT.slab_rdc : MAT.slab_ier);
-        slab.userData = {floor};
-        scene.add(slab);
-        // Perimeter wall — thin, semi-transparent
-        const wall = makeBox(ring, y, 3.2, isRDC ? MAT.wall_rdc : MAT.wall_ier);
-        wall.userData = {floor};
-        wall.material = new THREE.MeshStandardMaterial({
-          color: isRDC ? 0xfaf8f3 : 0xf0f4fb,
-          transparent: true, opacity: 0.18, roughness:0.9, side:THREE.DoubleSide
-        });
-        scene.add(wall);
-        // Perimeter edge line
-        scene.add(makeOutline(ring, y+0.02, ecol, 1, eopa));
-      } else {
-        const isWC = type==='wc';
-        const roomMat = isWC ? MAT.room_wc : (isRDC ? MAT.room_rdc : MAT.room_ier);
-        // Room as flat filled polygon, same level as slab
-        const flat = makeFlat(ring, y + 0.01, roomMat.clone());
-        flat.userData = { floor, name, routeName: polyToRoute(name), type };
-        flat.receiveShadow = true;
-        roomMeshes.push(flat);
-        scene.add(flat);
-        // Room edge outline
-        scene.add(makeOutline(ring, y + 0.02, ecol, 1, isRDC ? 0.55 : 0.65));
-        // Label
-        if (name && !isWC) {
-          scene.add(makeLabel(name, ring, y + 1.8, ecol));
-        }
-        const rn = polyToRoute(name);
-        if (rn) roomByName.set(rn, flat);
+      if(isEtage){
+        // Contour seulement — pas de surface remplie pour ne pas cacher les bureaux
+        grp.add(makeOutline(ring,y+.01,ecol,eopa));
+        // Ligne plus épaisse visuellement en doublant
+        grp.add(makeOutline(ring,y+.005,ecol,eopa*.5));
+      }else{
+        const isWC=type==='wc';
+        const baseCol=isWC?0xd8d8d8:(isRDC?0xcfccc3:0xbdcde5);
+        const mat=new THREE.MeshStandardMaterial({color:baseCol,roughness:.9,side:THREE.FrontSide});
+        const flat=makeFlat(ring,y,mat);
+        flat.userData={floor,bldg,name,routeName:polyToRoute(name),type,y};
+        roomMeshes.push(flat);grp.add(flat);
+        // Outline des bureaux
+        grp.add(makeOutline(ring,y+.015,ecol,eopa*.9));
+        // Label dans le bureau AU NIVEAU du sol
+        if(name&&!isWC)grp.add(makeLabel(name,ring,y,ecol,3.2));
+        const rn=polyToRoute(name);
+        if(rn)roomByName.set(rn,flat);
       }
     }
   }
 }
 
-function buildStairs() {
-  for (const feat of GEO_DATA['rdc_chemin'].features) {
-    if (feat.properties.apres !== '1ER') continue;
-    const coords = feat.geometry.coordinates;
-    const last = coords[coords.length-1];
-    const [px,py] = proj(last[0], last[1]);
-    // Small cylinder for staircase
-    const cyl = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.55, 0.55, FLOOR_H, 12),
-      new THREE.MeshStandardMaterial({ color:0xf5a623, roughness:0.6 })
+// ── Escaliers : petit marqueur plat ──
+const stairObjects=[];
+function buildStairs(){
+  const stairs=[];
+  for(const feat of GEO_DATA['rdc_chemin'].features){
+    if(feat.properties.apres!=='1ER')continue;
+    const coords=feat.geometry.coordinates;
+    stairs.push(coords[coords.length-1]);
+  }
+  for(const[lon,lat]of stairs){
+    const[px,py]=proj(lon,lat);
+    // Petit carré plat orange à niveau RDC
+    const sq=new THREE.Mesh(
+      new THREE.BoxGeometry(0.9,0.18,0.9),
+      new THREE.MeshStandardMaterial({color:0xe07b00,roughness:.7})
     );
-    cyl.position.set(px, FLOOR_H/2, -py);
-    cyl.castShadow = true;
-    scene.add(cyl);
-    // Label above
-    const lbl = makeLabel('⬆', [[last[0],last[1]],[last[0]+0.00001,last[1]]], FLOOR_H+2, 0xf5a623);
-    lbl.scale.set(2,2,1);
-    scene.add(lbl);
+    sq.position.set(px,0.09,-py);sq.castShadow=true;
+    // Flèche ↑ en sprite très petite
+    const lbl=makeLabel('↑',[[lon,lat],[lon+.00001,lat]],0.25,0xe07b00,2.2);
+    grpRDC.add(sq);grpRDC.add(lbl);
+    stairObjects.push(sq,lbl);
+    // Marqueur aussi au 1ER (on prend le niveau moyen A/B)
+    const sq2=new THREE.Mesh(
+      new THREE.BoxGeometry(0.9,0.18,0.9),
+      new THREE.MeshStandardMaterial({color:0xe07b00,roughness:.7})
+    );
+    sq2.position.set(px,FLOOR_H+0.09,-py);sq2.castShadow=true;
+    const lbl2=makeLabel('↓',[[lon,lat],[lon+.00001,lat]],FLOOR_H+0.25,0xe07b00,2.2);
+    grpIER.add(sq2);grpIER.add(lbl2);
   }
 }
 
-// ─── Path rendering ───
-let pathGroup = null, animMk = null, animState = null;
-
-function clearPath() {
-  if (pathGroup) { scene.remove(pathGroup); pathGroup = null; }
-  if (animMk) { scene.remove(animMk); animMk = null; }
-  animState = null;
-  // Reset room highlights
-  for (const m of roomMeshes) {
-    m.material.emissive = new THREE.Color(0x000000);
-    m.material.emissiveIntensity = 0;
-  }
+// ── Ground ──
+function buildGround(){
+  const g=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.MeshStandardMaterial({color:0xeceae3,roughness:1}));
+  g.rotation.x=-Math.PI/2;g.position.y=-.05;g.receiveShadow=true;scene.add(g);
 }
 
-function renderPath(result) {
+// ── Path ──
+let pathGrp=null,animMk=null,animState=null;
+
+function clearPath(){
+  if(pathGrp){scene.remove(pathGrp);pathGrp=null;}
+  if(animMk){scene.remove(animMk);animMk=null;}
+  animState=null;
+  for(const m of roomMeshes){if(m.material.emissive){m.material.emissive.set(0);m.material.emissiveIntensity=0;}}
+}
+
+// Pour le chemin, on estime le Y d'un point selon sa position géo (bâtiment B/C ier plus haut)
+// Simple heuristique : si floor=1ER et X > seuil, c'est B/C
+function pathY(pt){
+  if(pt.floor==='RDC')return 0.04;
+  const[px]=proj(pt.x,pt.y);
+  // bât A grosso modo X < -1.5, B et C X > -1.5
+  // (d'après les calculs: scène X -5.5 à 5.1, bât A plutôt gauche)
+  return(px < -1.0 ? FZ['1ER_A'] : FZ['1ER_B'])+0.04;
+}
+
+function renderPath(result){
   clearPath();
-  if (!result || result.path.length < 2) return;
-  pathGroup = new THREE.Group();
-  scene.add(pathGroup);
-  const pts = result.path;
+  if(!result||result.path.length<2)return;
+  pathGrp=new THREE.Group();scene.add(pathGrp);
+  const pts=result.path;
 
-  // Draw as a single continuous thin line
-  const positions = [];
-  for (const pt of pts) {
-    const [px,py] = proj(pt.x, pt.y);
-    const y = FZ[pt.floor] + 0.08; // just above floor
-    positions.push(new THREE.Vector3(px, y, -py));
-  }
-  // Main path line — thin red
-  const geo = new THREE.BufferGeometry().setFromPoints(positions);
-  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color:0xe84545, linewidth:2 }));
-  pathGroup.add(line);
+  // Ligne continue fine
+  const pos=pts.map(p=>{const[px,py]=proj(p.x,p.y);return new THREE.Vector3(px,pathY(p),-py);});
+  pathGrp.add(new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(pos),
+    new THREE.LineBasicMaterial({color:0xe84545,linewidth:1})
+  ));
 
-  // Stair segments — dashed orange
-  for (let i = 0; i < pts.length-1; i++) {
-    if (pts[i].floor !== pts[i+1].floor) {
-      const [x1,y1] = proj(pts[i].x, pts[i].y);
-      const [x2,y2] = proj(pts[i+1].x, pts[i+1].y);
-      const z1 = FZ[pts[i].floor]+0.1, z2 = FZ[pts[i+1].floor]+0.1;
-      const sg = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(x1,z1,-y1),
-        new THREE.Vector3(x2,z2,-y2)
-      ]);
-      pathGroup.add(new THREE.Line(sg, new THREE.LineBasicMaterial({color:0xf5a623,linewidth:2})));
+  // Segments d'escalier en orange
+  for(let i=0;i<pts.length-1;i++){
+    if(pts[i].floor!==pts[i+1].floor){
+      const[x1,y1]=proj(pts[i].x,pts[i].y),[x2,y2]=proj(pts[i+1].x,pts[i+1].y);
+      pathGrp.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x1,pathY(pts[i]),-y1),new THREE.Vector3(x2,pathY(pts[i+1]),-y2)]),
+        new THREE.LineBasicMaterial({color:0xe07b00,linewidth:1})
+      ));
     }
   }
 
-  // Start dot — small flat disc
-  const addDot = (pt, col) => {
-    const [px,py] = proj(pt.x, pt.y);
-    const y = FZ[pt.floor] + 0.05;
-    const disc = new THREE.Mesh(
-      new THREE.CircleGeometry(0.55, 20),
-      new THREE.MeshBasicMaterial({ color:col, side:THREE.DoubleSide })
-    );
-    disc.rotation.x = -Math.PI/2;
-    disc.position.set(px, y, -py);
-    pathGroup.add(disc);
-    // Outer ring
-    const ring = new THREE.Mesh(
-      new THREE.RingGeometry(0.6, 0.85, 20),
-      new THREE.MeshBasicMaterial({ color:col, transparent:true, opacity:0.4, side:THREE.DoubleSide })
-    );
-    ring.rotation.x = -Math.PI/2;
-    ring.position.set(px, y+0.01, -py);
-    pathGroup.add(ring);
+  // Petits disques de départ/arrivée
+  const addDot=(pt,col)=>{
+    const[px,py]=proj(pt.x,pt.y),y2=pathY(pt)+.01;
+    const d=new THREE.Mesh(new THREE.CircleGeometry(.32,20),new THREE.MeshBasicMaterial({color:col,side:THREE.DoubleSide}));
+    d.rotation.x=-Math.PI/2;d.position.set(px,y2,-py);pathGrp.add(d);
+    const r=new THREE.Mesh(new THREE.RingGeometry(.35,.5,20),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.35,side:THREE.DoubleSide}));
+    r.rotation.x=-Math.PI/2;r.position.set(px,y2+.005,-py);pathGrp.add(r);
   };
-  addDot(pts[0], 0x22c55e);
-  addDot(pts[pts.length-1], 0xe84545);
+  addDot(pts[0],0x22c55e);
+  addDot(pts[pts.length-1],0xe84545);
 
-  // Highlight rooms
-  highlightRooms(result.from.nom || result.from, result.to.nom || result.to);
-
-  animState = { pts, t:0, running:false, speed:0.22 };
-}
-
-function highlightRooms(fromNom, toNom) {
-  for (const m of roomMeshes) {
-    if (m.material.emissive) {
-      m.material.emissive.set(0x000000);
-      m.material.emissiveIntensity = 0;
-    }
-  }
-  [[fromNom, 0x22c55e], [toNom, 0xe84545]].forEach(([nom, col]) => {
-    const m = roomByName.get(nom);
-    if (m && m.material.emissive) {
-      m.material.emissive.set(col);
-      m.material.emissiveIntensity = 0.35;
-    }
+  // Highlight bureaux
+  [[result.from,0x22c55e],[result.to,0xe84545]].forEach(([obj,col])=>{
+    const nom=typeof obj==='string'?obj:(obj.nom||obj);
+    const m=roomByName.get(typeof nom==='string'?nom:String(nom));
+    if(m&&m.material){m.material.emissive=new THREE.Color(col);m.material.emissiveIntensity=.28;}
   });
+
+  animState={pts,t:0,running:false,speed:1.8};
 }
 
-function startAnimation() {
-  if (!animState) return;
-  if (!animMk) {
-    animMk = new THREE.Mesh(
-      new THREE.SphereGeometry(0.6, 12, 12),
-      new THREE.MeshStandardMaterial({ color:0xe84545, emissive:0xe84545, emissiveIntensity:.8, roughness:.3 })
-    );
+function startAnim(){
+  if(!animState)return;
+  if(!animMk){
+    animMk=new THREE.Mesh(new THREE.SphereGeometry(.28,10,10),new THREE.MeshStandardMaterial({color:0xe84545,emissive:0xe84545,emissiveIntensity:.9,roughness:.2}));
     scene.add(animMk);
   }
-  animState.t = 0;
-  animState.running = true;
+  animState.t=0;animState.running=true;
 }
 
-// ─── Init ───
-function buildScene() {
+// ── Build scene ──
+function buildScene(){
   initOrigin();
-  buildFloor([GEO_DATA['rdc_A'],GEO_DATA['rdc_B'],GEO_DATA['rdc_C']], 'RDC');
-  buildFloor([GEO_DATA['1er_A'],GEO_DATA['1er_B'],GEO_DATA['1er_C']], '1ER');
+  buildFloor([GEO_DATA['rdc_A']],'RDC','A');
+  buildFloor([GEO_DATA['rdc_B']],'RDC','B');
+  buildFloor([GEO_DATA['rdc_C']],'RDC','C');
+  buildFloor([GEO_DATA['1er_A']],'1ER','A');
+  buildFloor([GEO_DATA['1er_B']],'1ER','B');
+  buildFloor([GEO_DATA['1er_C']],'1ER','C');
   buildStairs();
-  // Subtle ground plane
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(300,300),
-    new THREE.MeshStandardMaterial({ color:0xeceae3, roughness:1 })
-  );
-  ground.rotation.x = -Math.PI/2;
-  ground.position.y = -0.1;
-  ground.receiveShadow = true;
-  scene.add(ground);
+  buildGround();
 }
 
-// ─── Routing ───
-const router = new RoutingEngine();
-router.buildFromGeoJSON(GEO_DATA['rdc_chemin'], GEO_DATA['1er_chemin']);
+// ── Routing ──
+const router=new RoutingEngine();
+router.buildFromGeoJSON(GEO_DATA['rdc_chemin'],GEO_DATA['1er_chemin']);
 
-function populateSelects() {
-  const sf = document.getElementById('sel-from');
-  const st = document.getElementById('sel-to');
-  const byFloor = { RDC:[], IER:[] };
-  for (const feat of GEO_DATA['point_salles'].features) {
-    const {nom,etage} = feat.properties;
-    if (!nom || nom==='WC') continue;
-    (etage==='RDC' ? byFloor.RDC : byFloor.IER).push(nom);
+function populateSelects(){
+  const sf=document.getElementById('sel-from'),st=document.getElementById('sel-to');
+  const byFloor={RDC:[],IER:[]};
+  for(const feat of GEO_DATA['point_salles'].features){
+    const{nom,etage}=feat.properties;
+    if(!nom||nom==='WC')continue;
+    (etage==='RDC'?byFloor.RDC:byFloor.IER).push(nom);
   }
-  const fill = sel => {
-    sel.innerHTML = '<option value="">Sélectionner un bureau…</option>';
-    [['RDC','Rez-de-chaussée'],['IER','1er étage']].forEach(([k,lbl]) => {
-      if (!byFloor[k].length) return;
-      const og = document.createElement('optgroup'); og.label = lbl;
-      byFloor[k].sort().forEach(n => {
-        const o = document.createElement('option'); o.value=n; o.textContent=n;
-        og.appendChild(o);
-      });
+  const fill=sel=>{
+    sel.innerHTML='<option value="">Sélectionner…</option>';
+    [['RDC','Rez-de-chaussée'],['IER','1er étage']].forEach(([k,lbl])=>{
+      if(!byFloor[k].length)return;
+      const og=document.createElement('optgroup');og.label=lbl;
+      byFloor[k].sort().forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;og.appendChild(o);});
       sel.appendChild(og);
     });
   };
-  fill(sf); fill(st);
-  [sf,st].forEach(s => s.addEventListener('change', checkBtns));
+  fill(sf);fill(st);
+  [sf,st].forEach(s=>s.addEventListener('change',chk));
+}
+function chk(){
+  const f=document.getElementById('sel-from').value,t=document.getElementById('sel-to').value;
+  document.getElementById('btn-go').disabled=!(f&&t&&f!==t);
 }
 
-function checkBtns() {
-  const f = document.getElementById('sel-from').value;
-  const t = document.getElementById('sel-to').value;
-  document.getElementById('btn-go').disabled = !(f && t && f!==t);
+document.getElementById('btn-go').addEventListener('click',()=>{
+  const from=document.getElementById('sel-from').value,to=document.getElementById('sel-to').value;
+  if(!from||!to)return;
+  const res=router.findPath(from,to,GEO_DATA['point_salles']);
+  if(!res||res.path.length<2){setSt('Aucun chemin trouvé',false);return;}
+  renderPath(res);
+  document.getElementById('btn-anim').disabled=false;
+  showSteps(res,from,to);
+  const mid=res.path[Math.floor(res.path.length/2)];
+  const[mx,my]=proj(mid.x,mid.y);
+  tgt.set(mx,(mid.floor==='RDC'?0:FLOOR_H)+2,-my);sph.r=22;camUpd();
+  setSt(`${from} → ${to}`);
+});
+
+document.getElementById('btn-swap').addEventListener('click',()=>{
+  const sf=document.getElementById('sel-from'),st=document.getElementById('sel-to');
+  const tmp=sf.value;sf.value=st.value;st.value=tmp;chk();
+});
+
+let animR=false;
+document.getElementById('btn-anim').addEventListener('click',()=>{
+  if(!animR){startAnim();animR=true;document.getElementById('ai').textContent='⏹';}
+  else{if(animState)animState.running=false;if(animMk){scene.remove(animMk);animMk=null;}animR=false;document.getElementById('ai').textContent='▶';}
+});
+
+function showSteps(res,from,to){
+  const el=document.getElementById('route-steps');el.classList.add('on');
+  document.getElementById('rh').innerHTML=`<span class="rf">${from}</span> <span style="color:var(--muted)">→</span> <span class="rt">${to}</span>`;
+  const pts=res.path,list=document.getElementById('sl2');list.innerHTML='';
+  const add=(ico,cls,txt,sub='')=>list.innerHTML+=`<li class="si"><div class="sico ${cls}">${ico}</div><div><div class="stxt">${txt}</div>${sub?`<div class="ssub">${sub}</div>`:''}</div></li>`;
+  add('A','s',`Départ : ${from}`,pts[0].floor);
+  for(let i=1;i<pts.length;i++)if(pts[i].floor!==pts[i-1].floor)add('↑','st','Escaliers',`${pts[i-1].floor} → ${pts[i].floor}`);
+  add('B','e',`Arrivée : ${to}`,pts[pts.length-1].floor);
 }
 
-document.getElementById('btn-go').addEventListener('click', () => {
-  const from = document.getElementById('sel-from').value;
-  const to   = document.getElementById('sel-to').value;
-  if (!from || !to) return;
-  const result = router.findPath(from, to, GEO_DATA['point_salles']);
-  if (!result || result.path.length < 2) {
-    setStatus('Aucun chemin trouvé', false); return;
-  }
-  renderPath(result);
-  document.getElementById('btn-anim').disabled = false;
-  showRouteSteps(result, from, to);
-  // Fly to midpoint
-  const mid = result.path[Math.floor(result.path.length/2)];
-  const [mx,my] = proj(mid.x, mid.y);
-  tgt.set(mx, FZ[mid.floor]+3, -my);
-  sph.r = 60; camUpdate();
-  setStatus(`${from} → ${to}`);
+// ── Floor checkboxes ──
+document.getElementById('chk-rdc').addEventListener('change',e=>{grpRDC.visible=e.target.checked;});
+document.getElementById('chk-ier').addEventListener('change',e=>{grpIER.visible=e.target.checked;});
+
+// ── Camera presets ──
+function setP(k){Object.assign(sph,CAM[k]||CAM.iso);camUpd();document.querySelectorAll('.vb').forEach(b=>b.classList.remove('on'));}
+document.getElementById('v-iso').addEventListener('click',()=>{setP('iso');document.getElementById('v-iso').classList.add('on');});
+document.getElementById('v-top').addEventListener('click',()=>{setP('top');document.getElementById('v-top').classList.add('on');});
+document.getElementById('v-front').addEventListener('click',()=>{setP('front');document.getElementById('v-front').classList.add('on');});
+document.getElementById('v-reset').addEventListener('click',()=>{
+  Object.assign(sph,CAM.iso);tgt.set(-0.2,2.5,0);camUpd();
+  clearPath();document.getElementById('route-steps').classList.remove('on');
+  document.getElementById('sel-from').value='';document.getElementById('sel-to').value='';
+  document.getElementById('btn-anim').disabled=true;animR=false;document.getElementById('ai').textContent='▶';
+  chk();setSt('Prêt');
+  document.querySelectorAll('.vb').forEach(b=>b.classList.remove('on'));document.getElementById('v-iso').classList.add('on');
 });
 
-// Swap
-document.getElementById('btn-swap').addEventListener('click', () => {
-  const sf = document.getElementById('sel-from');
-  const st = document.getElementById('sel-to');
-  const tmp = sf.value; sf.value = st.value; st.value = tmp;
-  checkBtns();
+// ── Raycast hover/click ──
+const rc=new THREE.Raycaster(),mu=new THREE.Vector2();
+cv.addEventListener('mousemove',e=>{
+  const r=cv.getBoundingClientRect();
+  mu.x=((e.clientX-r.left)/r.width)*2-1;mu.y=-((e.clientY-r.top)/r.height)*2+1;
+  rc.setFromCamera(mu,cam);
+  const hits=rc.intersectObjects(roomMeshes,false);
+  const tip=document.getElementById('tip');
+  if(hits.length){
+    const d=hits[0].object.userData;
+    tip.style.display='block';
+    const wr=cvWrap.getBoundingClientRect();
+    tip.style.left=(e.clientX-wr.left+12)+'px';tip.style.top=(e.clientY-wr.top-10)+'px';
+    document.getElementById('tn').textContent=d.name;
+    document.getElementById('ts').textContent=`${d.floor}${d.bldg?' · Bât. '+d.bldg:''} · ${d.type}${d.routeName?' · cliquer':''}`;
+    cv.style.cursor='pointer';
+  }else{tip.style.display='none';cv.style.cursor='grab';}
+});
+cv.addEventListener('mouseleave',()=>document.getElementById('tip').style.display='none');
+cv.addEventListener('click',e=>{
+  const r=cv.getBoundingClientRect();
+  mu.x=((e.clientX-r.left)/r.width)*2-1;mu.y=-((e.clientY-r.top)/r.height)*2+1;
+  rc.setFromCamera(mu,cam);
+  const hits=rc.intersectObjects(roomMeshes,false);
+  if(!hits.length)return;
+  const rn=hits[0].object.userData.routeName;if(!rn)return;
+  const sf=document.getElementById('sel-from'),st=document.getElementById('sel-to');
+  if(!sf.value)sf.value=rn;else if(!st.value&&rn!==sf.value)st.value=rn;else{sf.value=rn;st.value='';}
+  chk();
 });
 
-let animRunning = false;
-const btnAnim = document.getElementById('btn-anim');
-const animIcon = document.getElementById('anim-icon');
-btnAnim.addEventListener('click', () => {
-  if (!animRunning) {
-    startAnimation(); animRunning = true;
-    animIcon.textContent = '⏹';
-  } else {
-    if (animState) animState.running = false;
-    if (animMk) { scene.remove(animMk); animMk = null; }
-    animRunning = false; animIcon.textContent = '▶';
-  }
-});
-
-function showRouteSteps(result, from, to) {
-  const el = document.getElementById('route-steps');
-  el.classList.add('on');
-  document.getElementById('route-header').innerHTML =
-    `<span class="route-from">${from}</span> <span style="color:var(--muted)">→</span> <span class="route-to">${to}</span>`;
-  const pts = result.path;
-  const list = document.getElementById('step-list');
-  list.innerHTML = '';
-  const addStep = (icon, cls, txt, sub='') => {
-    list.innerHTML += `<li class="step-item">
-      <div class="step-icon ${cls}">${icon}</div>
-      <div><div class="step-text">${txt}</div>${sub?`<div class="step-sub">${sub}</div>`:''}</div>
-    </li>`;
-  };
-  addStep('A', 'start', `Départ : ${from}`, pts[0].floor);
-  for (let i=1;i<pts.length;i++) {
-    if (pts[i].floor !== pts[i-1].floor)
-      addStep('↑', 'stair', `Escaliers`, `${pts[i-1].floor} → ${pts[i].floor}`);
-  }
-  addStep('B', 'end', `Arrivée : ${to}`, pts[pts.length-1].floor);
-}
-
-// ─── Floor filter ───
-document.querySelectorAll('.ftab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.ftab').forEach(b => b.classList.remove('on'));
-    btn.classList.add('on');
-    const f = btn.dataset.f;
-    scene.traverse(o => {
-      if (o.userData && o.userData.floor)
-        o.visible = f==='all' || o.userData.floor===f;
-    });
-  });
-});
-
-// ─── Camera presets ───
-function setPreset(key) {
-  Object.assign(sph, CAM_PRESETS[key] || CAM_PRESETS.iso);
-  camUpdate();
-  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('on'));
-}
-document.getElementById('v-iso').addEventListener('click',   () => { setPreset('iso');   document.getElementById('v-iso').classList.add('on'); });
-document.getElementById('v-top').addEventListener('click',   () => { setPreset('top');   document.getElementById('v-top').classList.add('on'); });
-document.getElementById('v-front').addEventListener('click', () => { setPreset('front'); document.getElementById('v-front').classList.add('on'); });
-document.getElementById('v-reset').addEventListener('click', () => {
-  Object.assign(sph, CAM_PRESETS.iso); tgt.set(0,3,0); camUpdate();
-  clearPath();
-  document.getElementById('route-steps').classList.remove('on');
-  document.getElementById('sel-from').value=''; document.getElementById('sel-to').value='';
-  document.getElementById('btn-anim').disabled = true; animRunning = false; animIcon.textContent='▶';
-  checkBtns(); setStatus('Prêt');
-  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('on'));
-  document.getElementById('v-iso').classList.add('on');
-});
-
-// ─── Raycasting ───
-const rc = new THREE.Raycaster(), mu = new THREE.Vector2();
-const tip = document.getElementById('tip');
-
-cv.addEventListener('mousemove', e => {
-  const r = cv.getBoundingClientRect();
-  mu.x = ((e.clientX-r.left)/r.width)*2-1;
-  mu.y = -((e.clientY-r.top)/r.height)*2+1;
-  rc.setFromCamera(mu, cam);
-  const hits = rc.intersectObjects(roomMeshes, false);
-  if (hits.length) {
-    const d = hits[0].object.userData;
-    tip.style.display = 'block';
-    const wr = cvWrap.getBoundingClientRect();
-    tip.style.left = (e.clientX-wr.left+14)+'px';
-    tip.style.top  = (e.clientY-wr.top-12)+'px';
-    document.getElementById('tip-name').textContent = d.name;
-    document.getElementById('tip-sub').textContent = `${d.floor} · ${d.type}${d.routeName?' · cliquer pour sélectionner':''}`;
-    cv.style.cursor = 'pointer';
-  } else {
-    tip.style.display = 'none';
-    cv.style.cursor = 'grab';
-  }
-});
-cv.addEventListener('mouseleave', () => tip.style.display='none');
-
-cv.addEventListener('click', e => {
-  const r = cv.getBoundingClientRect();
-  mu.x = ((e.clientX-r.left)/r.width)*2-1;
-  mu.y = -((e.clientY-r.top)/r.height)*2+1;
-  rc.setFromCamera(mu, cam);
-  const hits = rc.intersectObjects(roomMeshes, false);
-  if (!hits.length) return;
-  const rn = hits[0].object.userData.routeName;
-  if (!rn) return;
-  const sf = document.getElementById('sel-from');
-  const st = document.getElementById('sel-to');
-  if (!sf.value) sf.value = rn;
-  else if (!st.value && rn!==sf.value) st.value = rn;
-  else { sf.value = rn; st.value = ''; }
-  checkBtns();
-});
-
-// ─── Minimap ───
-function drawMinimap() {
-  const mc = document.getElementById('mmc');
-  const mw=140, mh=80; mc.width=mw; mc.height=mh;
-  const ctx = mc.getContext('2d');
-  ctx.fillStyle = '#f5f4f0'; ctx.fillRect(0,0,mw,mh);
+// ── Minimap ──
+function drawMM(){
+  const mc=document.getElementById('mmc'),mw=130,mh=72;mc.width=mw;mc.height=mh;
+  const ctx=mc.getContext('2d');ctx.fillStyle='#f5f4f0';ctx.fillRect(0,0,mw,mh);
   let mnX=Infinity,mxX=-Infinity,mnY=Infinity,mxY=-Infinity;
-  for (const gj of [GEO_DATA['rdc_A'],GEO_DATA['rdc_B'],GEO_DATA['rdc_C']]) {
-    for (const f of gj.features) {
-      if (f.geometry.type!=='Polygon') continue;
-      for (const ring of f.geometry.coordinates)
-        for (const [x,y] of ring) { if(x<mnX)mnX=x;if(x>mxX)mxX=x;if(y<mnY)mnY=y;if(y>mxY)mxY=y; }
+  for(const gj of[GEO_DATA['rdc_A'],GEO_DATA['rdc_B'],GEO_DATA['rdc_C']]){
+    for(const f of gj.features){
+      if(f.geometry.type!=='Polygon')continue;
+      for(const ring of f.geometry.coordinates)for(const[x,y]of ring){if(x<mnX)mnX=x;if(x>mxX)mxX=x;if(y<mnY)mnY=y;if(y>mxY)mxY=y;}
     }
   }
-  const pad=6, sc2=Math.min((mw-pad*2)/(mxX-mnX),(mh-pad*2)/(mxY-mnY));
-  const mm = (lon,lat) => [pad+(lon-mnX)*sc2, mh-pad-(lat-mnY)*sc2];
-  const drawGJ = (gj, fc, sc) => {
-    for (const f of gj.features) {
-      if (f.geometry.type!=='Polygon') continue;
-      const ring = f.geometry.coordinates[0];
-      ctx.beginPath();
-      const [sx2,sy2] = mm(ring[0][0],ring[0][1]); ctx.moveTo(sx2,sy2);
-      for (const [x,y] of ring.slice(1)) { const[mx2,my2]=mm(x,y); ctx.lineTo(mx2,my2); }
-      ctx.closePath(); ctx.fillStyle=fc; ctx.fill();
-      ctx.strokeStyle=sc; ctx.lineWidth=.6; ctx.stroke();
+  const pad=6,sc2=Math.min((mw-pad*2)/(mxX-mnX),(mh-pad*2)/(mxY-mnY));
+  const mm=(lon,lat)=>[pad+(lon-mnX)*sc2,mh-pad-(lat-mnY)*sc2];
+  const dGJ=(gj,fc,sc)=>{
+    for(const f of gj.features){
+      if(f.geometry.type!=='Polygon')continue;
+      const ring=f.geometry.coordinates[0];ctx.beginPath();
+      const[sx,sy]=mm(ring[0][0],ring[0][1]);ctx.moveTo(sx,sy);
+      for(const[x,y]of ring.slice(1)){const[mx,my]=mm(x,y);ctx.lineTo(mx,my);}
+      ctx.closePath();ctx.fillStyle=fc;ctx.fill();ctx.strokeStyle=sc;ctx.lineWidth=.6;ctx.stroke();
     }
   };
-  drawGJ(GEO_DATA['rdc_A'],'#dbd8ce','#9a9890');
-  drawGJ(GEO_DATA['rdc_B'],'#dbd8ce','#9a9890');
-  drawGJ(GEO_DATA['rdc_C'],'#dbd8ce','#9a9890');
-  drawGJ(GEO_DATA['1er_A'],'#c8d8ee','#8a9abf');
-  drawGJ(GEO_DATA['1er_B'],'#c8d8ee','#8a9abf');
-  drawGJ(GEO_DATA['1er_C'],'#c8d8ee','#8a9abf');
-  // path
-  if (animState && animState.pts.length > 1) {
-    const pts = animState.pts;
-    ctx.beginPath();
-    for (let i=0;i<pts.length;i++) {
-      const [mx2,my2]=mm(pts[i].x,pts[i].y);
-      i===0 ? ctx.moveTo(mx2,my2) : ctx.lineTo(mx2,my2);
-    }
-    ctx.strokeStyle='#e84545'; ctx.lineWidth=1.5; ctx.stroke();
+  if(grpRDC.visible){dGJ(GEO_DATA['rdc_A'],'#dbd8ce','#9a9890');dGJ(GEO_DATA['rdc_B'],'#dbd8ce','#9a9890');dGJ(GEO_DATA['rdc_C'],'#dbd8ce','#9a9890');}
+  if(grpIER.visible){dGJ(GEO_DATA['1er_A'],'#c0cde6','#8090b8');dGJ(GEO_DATA['1er_B'],'#c0cde6','#8090b8');dGJ(GEO_DATA['1er_C'],'#c0cde6','#8090b8');}
+  if(animState&&animState.pts.length>1){
+    const pts=animState.pts;ctx.beginPath();
+    for(let i=0;i<pts.length;i++){const[mx,my]=mm(pts[i].x,pts[i].y);i===0?ctx.moveTo(mx,my):ctx.lineTo(mx,my);}
+    ctx.strokeStyle='#e84545';ctx.lineWidth=1.5;ctx.stroke();
   }
 }
 
-// ─── Animation loop ───
-let lastT = performance.now();
-function animate() {
+// ── Animation loop ──
+let lastT=performance.now();
+function animate(){
   requestAnimationFrame(animate);
-  const now = performance.now(), dt = (now-lastT)/1000; lastT = now;
-
-  if (animState && animState.running && animMk) {
-    animState.t += animState.speed * dt;
-    const pts = animState.pts;
-    if (animState.t >= pts.length-1) {
-      animState.running = false;
-      scene.remove(animMk); animMk = null;
-      animRunning = false; animIcon.textContent = '▶';
-    } else {
-      const idx = Math.floor(animState.t), frac = animState.t - idx;
-      const p1=pts[idx], p2=pts[Math.min(idx+1,pts.length-1)];
-      const [x1,y1]=proj(p1.x,p1.y), [x2,y2]=proj(p2.x,p2.y);
-      const z1=FZ[p1.floor]+0.6, z2=FZ[p2.floor]+0.6;
-      animMk.position.set(x1+(x2-x1)*frac, z1+(z2-z1)*frac, -(y1+(y2-y1)*frac));
-      tgt.lerp(new THREE.Vector3(animMk.position.x, animMk.position.y+2, animMk.position.z), 0.035);
-      camUpdate();
+  const now=performance.now(),dt=(now-lastT)/1000;lastT=now;
+  if(animState&&animState.running&&animMk){
+    animState.t+=animState.speed*dt;
+    const pts=animState.pts;
+    if(animState.t>=pts.length-1){
+      animState.running=false;scene.remove(animMk);animMk=null;animR=false;document.getElementById('ai').textContent='▶';
+    }else{
+      const idx=Math.floor(animState.t),frac=animState.t-idx;
+      const p1=pts[idx],p2=pts[Math.min(idx+1,pts.length-1)];
+      const[x1,y1]=proj(p1.x,p1.y),[x2,y2]=proj(p2.x,p2.y);
+      const z1=pathY(p1),z2=pathY(p2);
+      animMk.position.set(x1+(x2-x1)*frac,z1+.28+(z2-z1)*frac,-(y1+(y2-y1)*frac));
+      tgt.lerp(new THREE.Vector3(animMk.position.x,animMk.position.y+1,animMk.position.z),.04);camUpd();
     }
   }
-
-  renderer.render(scene, cam);
-  drawMinimap();
+  renderer.render(scene,cam);drawMM();
 }
 
-// ─── Status ───
-function setStatus(msg, ok=true) {
-  document.getElementById('status-txt').textContent = msg;
-  document.getElementById('status-pip').style.background = ok ? '#22c55e' : '#ef4444';
+function setSt(msg,ok=true){
+  document.getElementById('stxt').textContent=msg;
+  document.getElementById('pip').style.background=ok?'#22c55e':'#ef4444';
 }
+function resize(){const w=cvWrap.clientWidth,h=cvWrap.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+window.addEventListener('resize',resize);resize();
 
-// ─── Resize ───
-function resize() {
-  const w=cvWrap.clientWidth, h=cvWrap.clientHeight;
-  renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix();
-}
-window.addEventListener('resize', resize); resize();
-
-// ─── Boot ───
-buildScene();
-populateSelects();
-camUpdate();
-setTimeout(() => {
-  document.getElementById('loading').classList.add('gone');
-  setStatus('Prêt');
-  showHint();
-}, 750);
+buildScene();populateSelects();camUpd();
+setTimeout(()=>{document.getElementById('loading').classList.add('gone');setSt('Prêt');showHint();},700);
 animate();
 </script>
 </body>
